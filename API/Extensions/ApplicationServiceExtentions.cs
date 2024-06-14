@@ -1,0 +1,37 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Application.Activities;
+using Application.Core;
+using Microsoft.EntityFrameworkCore;
+using Persistence;
+
+namespace API.Extensions
+{
+    public static class ApplicationServiceExtentions
+    {
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
+        {
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
+            services.AddDbContext<DataContext> (options =>
+            {
+                options.UseSqlite(config.GetConnectionString("DefaultConnection"));
+            });
+
+            services.AddMediatR(cfg =>{
+                cfg.RegisterServicesFromAssembly(typeof(List.Handler).Assembly);    
+            });
+            services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+
+            services.AddCors(options =>{
+                options.AddPolicy("CorsPolicy", policy =>{
+                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
+                });
+            });
+            return services;
+        }
+    }
+}
