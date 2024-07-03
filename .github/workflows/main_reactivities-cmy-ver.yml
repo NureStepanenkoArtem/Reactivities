@@ -16,30 +16,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup NodeJS
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Install deps and build react app
-        run: |
-          cd client-app
-          npm install
-          npm run build
-
       - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '8.x'
+          include-prerelease: true
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.GITHUB_WORKSPACE}}\myapp"
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
@@ -55,18 +45,20 @@ jobs:
 
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
+        with:
+          name: .net-app
       
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_8F9C028DCD6F44C793BA63B97E8F95DE }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_CD51F84E216A4420814D7244E9D7E7A6 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_C06FAEBB9C674B9D9178654A048C6275 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_AD09FA5283EC4C4091C67360ABEEC236 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_BBF172658186411B8D845E2FC4364BCE }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_36E5E62573754DE4B23FAB1660FB61D8 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@v2
         with:
           app-name: 'reactivities-cmy-ver'
           slot-name: 'Production'
